@@ -258,10 +258,13 @@ class BatteryManager:ObservableObject {
 
         }.store(in: &updates)
 
-        NotificationCenter.default.publisher(for: Notification.Name.NSProcessInfoPowerStateDidChange).receive(on: DispatchQueue.main).sink { _ in
-            self.powerSaveModeUpdate()
+        if #available(macOS 12.0, *) {
+            NotificationCenter.default.publisher(for: Notification.Name.NSProcessInfoPowerStateDidChange).receive(on: DispatchQueue.main).sink { _ in
+                self.powerSaveModeUpdate()
 
-        }.store(in: &updates)
+            }.store(in: &updates)
+
+        }
 
         // system_profiler is expensive: only every 30 minutes
         AppManager.shared.appTimer(1800).sink { _ in
