@@ -13,6 +13,7 @@ jobs:
 
       - name: Build app (unsigned)
         run: |
+          set -o pipefail
           xcodebuild \
             -project BatteryBoi.xcodeproj \
             -scheme BatteryBoi \
@@ -24,7 +25,10 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM="" \
-            build
+            build 2>&1 | tee build.log || {
+              grep -E "error:|fatal error|BUILD FAILED|xcodebuild: error" build.log | sort -u | head -40 | while IFS= read -r l; do echo "::error::${l}"; done
+              exit 1
+            }
 
       - name: Ad-hoc sign and zip
         run: |
