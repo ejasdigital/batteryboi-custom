@@ -142,7 +142,9 @@ struct BatteryCharging:Equatable {
 
 struct BatteryRemaining:Equatable {
     static func == (lhs: BatteryRemaining, rhs: BatteryRemaining) -> Bool {
-        return lhs.date == rhs.date
+        // compare the values shown, not the generated timestamp, so unchanged
+        // estimates don't trigger UI updates
+        return lhs.hours == rhs.hours && lhs.minutes == rhs.minutes
         
     }
     
@@ -227,14 +229,16 @@ class BatteryManager:ObservableObject {
             
         }
         
-        AppManager.shared.appTimer(1).dropFirst(5).sink { _ in
+        // Battery changes are pushed to us by macOS (see powerObserve), so polling
+        // is only a slow safety net instead of every second.
+        AppManager.shared.appTimer(60).dropFirst().sink { _ in
             self.powerStatus(true)
             self.counter = nil
             
         }.store(in: &updates)
         
-        AppManager.shared.appTimer(6).sink { _ in
-            self.remaining = self.powerRemaing
+        AppManager.shared.appTimer(60).sink { _ in
+            self.powerRemainingUpdate()
             self.counter = nil
 
         }.store(in: &updates)
@@ -247,14 +251,27 @@ class BatteryManager:ObservableObject {
         
         #endif
         
-        AppManager.shared.appTimer(60).sink { _ in
-            self.saver = self.powerSaveModeStatus
+        // low power mode: read natively and on change, no shell process
+        AppManager.shared.appTimer(300).sink { _ in
+            self.powerSaveModeUpdate()
+            self.counter = nil
+
+        }.store(in: &updates)
+
+        NotificationCenter.default.publisher(for: Notification.Name.NSProcessInfoPowerStateDidChange).receive(on: DispatchQueue.main).sink { _ in
+            self.powerSaveModeUpdate()
+
+        }.store(in: &updates)
+
+        // system_profiler is expensive: only every 30 minutes
+        AppManager.shared.appTimer(1800).sink { _ in
             self.metrics = self.powerProfilerDetails
             self.counter = nil
 
         }.store(in: &updates)
         
         self.powerStatus(true)
+        self.powerObserve()
     
     }
     
@@ -300,7 +317,11 @@ class BatteryManager:ObservableObject {
     
     private func powerStatus(_ force:Bool = false) {
         if force == true {
-            self.percentage = self.powerPercentage
+            let percentage = self.powerPercentage
+            if percentage != self.percentage {
+                self.percentage = percentage
+
+            }
 
             if self.powerCharging != self.charging.state {
                 self.charging = .init(self.powerCharging)
@@ -309,6 +330,57 @@ class BatteryManager:ObservableObject {
             
         }
         
+    }
+
+    /// Ask macOS to tell us when the battery level or power source changes,
+    /// instead of checking every second.
+    private func powerObserve() {
+        let callback: IOPowerSourceCallbackType = { _ in
+            DispatchQueue.main.async {
+                BatteryManager.shared.powerSourceChanged()
+
+            }
+
+        }
+
+        if let source = IOPSNotificationCreateRunLoopSource(callback, nil)?.takeRetainedValue() {
+            CFRunLoopAddSource(CFRunLoopGetMain(), source, .defaultMode)
+
+        }
+
+    }
+
+    fileprivate func powerSourceChanged() {
+        self.powerStatus(true)
+        self.powerRemainingUpdate()
+
+    }
+
+    private func powerRemainingUpdate() {
+        let remaining = self.powerRemaing
+        if remaining != self.remaining {
+            self.remaining = remaining
+
+        }
+
+    }
+
+    private func powerSaveModeUpdate() {
+        let saver: BatteryModeType
+        if #available(macOS 12.0, *) {
+            saver = ProcessInfo.processInfo.isLowPowerModeEnabled ? .efficient : .normal
+
+        }
+        else {
+            saver = self.powerSaveModeStatus
+
+        }
+
+        if saver != self.saver {
+            self.saver = saver
+
+        }
+
     }
     
     private var powerCharging:BatteryChargingState {
@@ -342,19 +414,39 @@ class BatteryManager:ObservableObject {
         
     }
     
+    /// Time remaining (to empty, or to full while charging), read directly from
+    /// IOKit instead of launching `pmset` in a shell.
+    private var powerRemainingMinutes:Int? {
+        let snapshot = IOPSCopyPowerSourcesInfo().takeRetainedValue()
+        let sources = IOPSCopyPowerSourcesList(snapshot).takeRetainedValue() as Array
+        for source in sources {
+            if let description = IOPSGetPowerSourceDescription(snapshot, source).takeUnretainedValue() as? [String: Any] {
+                if description[kIOPSTypeKey] as? String == kIOPSInternalBatteryType {
+                    let charging = description[kIOPSIsChargingKey] as? Bool ?? false
+                    let key = charging ? kIOPSTimeToFullChargeKey : kIOPSTimeToEmptyKey
+                    if let minutes = description[key] as? Int, minutes >= 0 {
+                        return minutes
+
+                    }
+
+                    return nil
+
+                }
+
+            }
+
+        }
+
+        return nil
+
+    }
+
     private var powerRemaing:BatteryRemaining? {
-        let process = Process()
-        process.launchPath = "/bin/sh"
-        process.arguments = ["-c", "pmset -g batt | grep -o '[0-9]\\{1,2\\}:[0-9]\\{2\\}'"]
-        
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.launch()
-        
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        
-        if let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines).components(separatedBy: ":") {
-            if let hour = output.map({ Int($0)}).first, let min = output.map({ Int($0)}).last {
+        let total = self.powerRemainingMinutes
+        let output:[Int?] = total.map { [$0 / 60, $0 % 60] } ?? [nil]
+
+        do {
+            if let hour = output.first, let min = output.last {
                 if let hour = hour, let minute = min {
                     self.powerDepetionAverage =  (Double(hour) * 60.0 * 60.0) + (Double(minute) * 60.0)
 

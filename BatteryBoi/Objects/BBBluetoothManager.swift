@@ -301,8 +301,13 @@ class BluetoothManager:ObservableObject {
     private var updates = Set<AnyCancellable>()
         
     init() {
-        AppManager.shared.appTimer(15).dropFirst(1).receive(on: DispatchQueue.main).sink { _ in
+        // Each scan launches python scripts, so keep them infrequent.
+        AppManager.shared.appTimer(120).dropFirst(1).receive(on: DispatchQueue.main).sink { _ in
             self.bluetoothList(.oreg)
+
+        }.store(in: &updates)
+
+        AppManager.shared.appTimer(600).dropFirst(1).receive(on: DispatchQueue.main).sink { _ in
             self.bluetoothList(.profiler)
 
         }.store(in: &updates)

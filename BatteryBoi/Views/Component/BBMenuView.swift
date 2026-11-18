@@ -405,7 +405,6 @@ struct AppleBatteryIcon: View {
     @EnvironmentObject var manager: BatteryManager
 
     @State private var level: CGFloat = 1.0
-    @State private var pulse: Bool = false
 
     private var isCharging: Bool { manager.charging.state == .charging }
 
@@ -436,7 +435,6 @@ struct AppleBatteryIcon: View {
                 RoundedRectangle(cornerRadius: m.radius - m.inset + 0.5, style: .continuous)
                     .fill(fillColor)
                     .frame(width: innerWidth * level, height: innerHeight)
-                    .opacity(isCharging && pulse ? 0.55 : 1.0)
                     .padding(.leading, m.inset)
 
                 if isCharging {
@@ -466,31 +464,14 @@ struct AppleBatteryIcon: View {
             withAnimation(.spring(response: 0.9, dampingFraction: 0.85)) {
                 level = target(manager.percentage)
             }
-            updatePulse(isCharging)
         }
         .onChange(of: manager.percentage) { newValue in
             withAnimation(.easeInOut(duration: 0.8)) {
                 level = target(newValue)
             }
         }
-        .onChange(of: manager.charging) { newValue in
-            updatePulse(newValue.state == .charging)
-        }
     }
 
-    private func updatePulse(_ charging: Bool) {
-        if charging {
-            pulse = false
-            withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
-                pulse = true
-            }
-        }
-        else {
-            withAnimation(.easeOut(duration: 0.3)) {
-                pulse = false
-            }
-        }
-    }
 }
 
 /// Menu bar item: optional label (percentage / time left, from Settings) + battery icon.

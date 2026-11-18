@@ -24,7 +24,7 @@ class AppManager:ObservableObject {
     private var timer: AnyCancellable?
 
     init() {
-        self.timer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect().sink { [weak self] _ in
+        self.timer = Timer.publish(every: 1.0, tolerance: 0.5, on: .main, in: .common).autoconnect().sink { [weak self] _ in
             
             guard let self = self else {
                 return
