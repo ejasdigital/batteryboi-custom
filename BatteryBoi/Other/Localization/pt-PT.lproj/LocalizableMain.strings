@@ -1,0 +1,65 @@
+"AlertSomePercentTitle" = "%d%% Restante"; // 90% Restante
+"AlertOnePercentTitle" = "O seu Mac está prestes a Desligar-se";
+"AlertChargingTitle" = "A Carregar...";
+"AlertChargingStoppedTitle" = "Carregador Retirado";
+"AlertChargingCompleteTitle" = "Carga Completa";
+"AlertDeviceConnectedTitle" = "'%@' Conectado"; // 'Auscultadores do Joe' Conectado
+"AlertDeviceDisconnectedTitle" = "'%@' Desconectado"; // 'Auscultadores do Joe' Desconectado
+"AlertDeviceUnknownTitle" = "Desconhecido";
+"AlertDeviceCalculatingTitle" = "A Calcular...";
+
+"AlertEstimateSummary" = "**%@** até esgotar"; // 1 hora, 32 minutos até esgotar
+"AlertPercentSummary" = "Hora de pegar no cabo!";
+"AlertStartedChargeSummary" = "Totalmente carregado às **%@**."; // Totalmente carregado às 14:32
+"AlertChargedSummary" = "A sua bateria está totalmente carregada.";
+
+"TimestampHourFullLabel_Plural" = "%d horas";
+"TimestampHourFullLabel_Single" = "%d hora";
+"TimestampMinuteFullLabel_Plural" = "%d minutos";
+"TimestampMinuteFullLabel_Single" = "%d minuto";
+"TimestampMinuteDaysLabel_Plural" = "%d dias";
+"TimestampHourAbbriviatedLabel" = "h";
+"TimestampMinuteAbbriviatedLabel" = "m";
+"TimestampDayAbbriviatedLabel" = "d";
+"TimestampNeverLabel" = "Nunca";
+"TimestampNowLabel" = "Há Poucos Momentos";
+
+"SettingsWebsiteLabel" = "Website";
+"SettingsQuitLabel" = "Sair";
+"SettingsThemeLabel" = "Aparência";
+"SettingsEfficiencyLabel" = "Baixo Consumo";
+"SettingsCheckUpdatesLabel" = "Verificar Atualizações";
+"SettingsNewUpdateLabel" = "Instalar Nova Atualização";
+"SettingsDisplayLabel" = "Exibição";
+"SettingsDisplayPercentLabel" = "Percentagem";
+"SettingsDisplayEstimateLabel" = "Tempo";
+"SettingsDisplayNoneLabel" = "Vazio";
+"SettingsDisplayRemovedLabel" = "Ícone da Barra de Menu Oculto";
+"SettingsEnabledLabel" = "Ativado";
+"SettingsDisabledLabel" = "Desativado";
+"SettingsAboutLabel" = "Sobre";
+"SettingsCustomizationLabel" = "Personalização";
+"SettingsSoundEffectsLabel" = "Efeitos Sonoros";
+"SettingsTriggersLabel" = "Comandos";
+"SettingsNotificationsLabel" = "Notificações";
+"SettingsPrereleasesLabel" = "Versões Beta";
+
+"SettingsCustomizationMenuLabel" = "Ícone da Barra de Menu";
+"SettingsCustomizationThemeDarkLabel" = "Escuro";
+"SettingsCustomizationThemeLightLabel" = "Claro";
+"SettingsCustomizationThemeSystemLabel" = "Sistema";
+"SettingsCustomizationThemeTitle" = "Aparência";
+
+"UpdateStatusCheckingLabel" = "A Verificar Atualizações...";
+"UpdateStatusIdleLabel" = "Última Verificação: %@"; // Última Verificação: há 4 horas
+"UpdateStatusEmptyLabel" = "Sem Atualizações Disponíveis";
+"UpdateStatusNewLabel" = "Nova atualização disponível!";
+
+"AboutTitle" = "BatteryBoi, grátis, para sempre, para todos...";
+"AboutBodyOne" = "Na agitada paisagem de apps onde as carteiras frequentemente sofrem com assinaturas recorrentes, o BatteryBoi é 100% gratuito e de código aberto, para sempre!";
+"AboutBodyTwo" = "Construir um app que parece tão bom demanda muitos dias de trabalho, suor e às vezes lágrimas. É por isso que estou pedindo para pessoas e empresas que podem, considerem fazer uma doação.";
+"AboutBodyThree" = "As doações manterão as luzes acesas e os updates e correções fluindo.";
+"AboutBodyFooter" = "Obrigado - Joe (Fundador do BatteryBoi)";
+"AboutGithubAction" = "GitHub";
+"AboutDonateAction" = "Doar";
+"AboutShareAction" = "Compartilhar";
